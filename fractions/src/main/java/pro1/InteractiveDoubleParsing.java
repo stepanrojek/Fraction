@@ -9,20 +9,20 @@ public class InteractiveDoubleParsing {
         // Nekonečná smyčka pro opakování zadávání čísel
         while (true) {
             System.out.print("Zadejte číslo: ");
-            String input = scanner.nextLine().trim();  // Odstraníme případné mezery
+            String vstup = scanner.nextLine().trim();  // Odstraníme případné mezery
 
             // Pokud je vstup prázdný, přeskočíme cyklus
-            if (input.isEmpty()) {
+            if (vstup.isEmpty()) {
                 System.out.println("Zadal jste prázdný vstup. Zkuste to znovu.");
                 continue;
             }
 
             // Pokud je vstup platné číslo (kontrola pomocí regulárního výrazu)
-            if (input.matches("-?\\d*(\\.\\d+)?")) {
-                double number = Double.parseDouble(input);
+            if (vstup.matches("-?\\d*(\\.\\d+)?")) {
+                double number = Double.parseDouble(vstup);
                 System.out.println("Zadal jste číslo: " + number);
             } else {
-                System.out.println("Zadal jste neplatný řetězec: " + input);
+                System.out.println("Zadal jste neplatný řetězec: " + vstup);
             }
         }
     }

@@ -73,5 +73,4 @@ public class Main {
         // Vrátíme seznam záznamů jako pole
         return resultList.toArray(new ExamRecord[0]);
     }
-
 }
