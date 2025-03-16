@@ -1,6 +1,5 @@
 package pro1;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,70 +10,68 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        // Načtení souborů z adresáře "C:/data/input"
-        // Vytvoříme objekt File, který ukazuje na složku obsahující vstupní soubory
+        // Vytvoření objektů pro adresáře, kde máme vstupní a výstupní soubory
         File inputDir = new File("C:/data/input");
+        File outputDir = new File("C:/data/output");
 
-        // Získáme všechny soubory v adresáři (pokud existují)
+        // Načtení všech souborů ve vstupním adresáři
         File[] inputFiles = inputDir.listFiles();
 
-        // Pro každý soubor v seznamu souborů provádíme operace
-        for (File inputFile : inputFiles) {
-            System.out.println("Reading " + inputFile);  // Vytiskneme název souboru, který se právě čte
-            // Načteme data ze souboru do pole záznamů (ExamRecord)
-            ExamRecord[] records = readInputFile(inputFile.toPath());
+        // Pokud jsou soubory v adresáři, začneme je zpracovávat
+        if (inputFiles != null) {
+            // Pro každý soubor v seznamu
+            for (File inputFile : inputFiles) {
+                // Načteme data ze souboru do pole záznamů (ExamRecord)
+                ExamRecord[] records = readInputFile(inputFile.toPath());
 
-            // Vytvoříme výstupní soubor ve složce "C:/data/output"
-            // Výstupní soubor bude mít stejný název jako vstupní
-            File outputFile = new File("C:/data/output/" + inputFile.getName());
-            // Zápis záznamů do výstupního souboru
-            writeOutputFile(outputFile, records);
+                // Vytvoření cesty pro výstupní soubor (soubor bude mít stejné jméno jako vstupní)
+                String outputFilePath = new File(outputDir, inputFile.getName()).getAbsolutePath();
+
+                // Zápis dat do výstupního souboru
+                try (FileWriter writer = new FileWriter(outputFilePath)) {
+                    // Pro každý záznam (ExamRecord) zapisujeme jméno a skóre do souboru
+                    for (ExamRecord record : records) {
+                        // Zápis jména a skóre do souboru, oddělené čárkou
+                        writer.write(record.getName() + ", " + record.getScore().toString() + "\n");
+                    }
+                } catch (IOException e) {
+                    // Pokud dojde k chybě při zápisu do souboru, vypíše chybovou hlášku
+                    System.err.println("Chyba při zápisu");
+                }
+            }
+        } else {
+            // Pokud se nepodaří najít žádné soubory v adresáři, vypíše se hláška
+            System.out.println("Nebyly nalezeny žádné soubory ve vstupním adresáři.");
         }
     }
-
     // Metoda pro načítání dat ze souboru
-    public static ExamRecord[] readInputFile(Path path) {
+    public static ExamRecord[] readInputFile(Path path)
+    {
         List<String> lines = null;
         try {
             // Načteme všechny řádky souboru jako seznam řetězců
             lines = Files.readAllLines(path);
         } catch (IOException e) {
-            // Pokud dojde k chybě při čtení souboru, vypíšeme chybu a vrátíme prázdné pole
-            System.err.println("Chyba při čtení souboru: " + path);
+            // Pokud dojde k chybě při čtení souboru, vrátí prázdné pole
             return new ExamRecord[0];
         }
-
         // Seznam pro uchování výsledků (záznamů o osobách)
         List<ExamRecord> resultList = new ArrayList<>();
-        // Pro každý řádek ve vstupním souboru
-        for (String line : lines) {
-            // Rozdělíme řádek na dvě části: jméno a skóre
-            String[] split = line.split(",");
-            if (split.length == 2) {  // Ověření správného formátu (jméno, skóre)
-                String name = split[0].trim();  // Jméno osoby
-                // Parsování skóre, které je ve formě zlomku
-                Fraction score = Fraction.parse(split[1].trim());
-                // Přidáme nový záznam do seznamu
-                resultList.add(new ExamRecord(name, score));
-            } else {
-                // Pokud formát řádku není platný, vypíšeme chybu
-                System.err.println("Neplatný řádek: " + line);
-            }
+
+        // Pro každý řádek v seznamu
+        for(String line : lines)
+        {
+            // Rozdělíme řádek na jméno a skóre podle oddělovačů ":", "=" nebo ";"
+            String[] split= line.split("[:=;]");
+
+            // Vytvoříme nový záznam a přidáme ho do seznamu
+            resultList.add(new ExamRecord(
+                    split[0], // První část je jméno
+                    Fraction.parse(split[1]) // Druhá část je skóre, které parsujeme pomocí Fraction.parse()
+            ));
         }
         // Vrátíme seznam záznamů jako pole
         return resultList.toArray(new ExamRecord[0]);
     }
 
-    // Metoda pro zápis dat do výstupního CSV souboru
-    public static void writeOutputFile(File outputFile, ExamRecord[] records) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
-            // Pro každý záznam (ExamRecord) zapisujeme jeho jméno a skóre do souboru
-            for (ExamRecord record : records) {
-                writer.write(record.getName() + "," + record.getScore() + "\n");  // Formát "jméno,skóre"
-            }
-        } catch (IOException e) {
-            // Pokud dojde k chybě při zápisu do souboru, vypíšeme chybu
-            System.err.println("Chyba při zápisu do souboru: " + outputFile);
-        }
-    }
 }
